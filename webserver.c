@@ -8,19 +8,30 @@
 #include<sys/socket.h>
 #include <netinet/in.h>
 
-int main(int argc, char* argv[]){
-
-	const int PORT = 8080;
-	const int buffer_size = 1024;
-
+struct sockaddr_in  create_container(int PORT){
 	//generic container to pass to the bind function
 	struct sockaddr_in address;
-	int addrlen = sizeof(address);
 	memset((char*)&address,0,sizeof(address));
 
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = htonl(INADDR_ANY);
 	address.sin_port = htons(PORT);
+
+	return address;
+}
+
+int main(int argc, char* argv[]){
+
+	const int PORT = 8080;
+	const int buffer_size = 1024;
+	struct sockaddr_in address = create_container(PORT);
+	int addrlen = sizeof(address);
+
+	//buffer to store data that is read from socket
+	char buffer[buffer_size];
+	memset(buffer,0,buffer_size);
+	//message to be sent to client
+	char *message = "Hello from server\n";
 
 	//create the socket
 	int sckt = socket(AF_INET,SOCK_STREAM,0);
@@ -31,7 +42,6 @@ int main(int argc, char* argv[]){
 	}
 
 	//bind the socket to the given port number
-
 	int bd = bind(sckt,(struct sockaddr *)&address,sizeof(address));
 
 	if(bd < 0){
@@ -46,12 +56,6 @@ int main(int argc, char* argv[]){
 		perror("error in listen\n");
 		exit(EXIT_FAILURE);
 	}
-
-	//buffer to store data that is read from socket
-	char buffer[buffer_size];
-	memset(buffer,0,buffer_size);
-	//message to be sent to client
-	char *message = "Hello from server\n";
 
 	while(1){
 
